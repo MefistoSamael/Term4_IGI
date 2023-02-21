@@ -6,20 +6,11 @@ def task1():
 
 
 def task2(number1, number2, operation):
-    if operation == "add":
-        return number1 + number2
-    elif operation == "sub":
-        return number1 - number2
-    elif operation == "mult":
-        return number1 * number2
-    elif operation == "div":
-        if number2:
-            return number1 / number2
-        else:
-            return "Error: division by zero"
-    else:
-        return "Error: invalid operation"
+    try:
+        return eval(number1.__str__() + " " + operation + " " + number2.__str__())
+    except ZeroDivisionError:
+        return "Error: division by zero"
 
 
 task1()
-print(task2(5, 0, "div"))
+print(task2(5, 0, "/"))
