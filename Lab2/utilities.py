@@ -2,7 +2,7 @@ import re
 from constants import *
 
 
-def clear_text(text):
+def simplify_text(text):
     substr = text
 
     for abbr in BIG_LETTER_ABBREVIATIONS:
@@ -14,10 +14,13 @@ def clear_text(text):
     # Ellipsis
     substr = re.sub(r"\.\s\.\s\.", ".", substr)
 
-    # Direct speech - the end of a sentence
+    # checks the beginning of a sentence with direct speech, but with ! or ?
+    substr = re.sub(r'\"[\w\d\s,\'!?.]*[?!]\"\s[a-z]', "A,", substr)
+
+    # checks the end of a sentence with direct speech
     substr = re.sub(r', \"[\w\d\s,\'!?.]*[?!.]\"', ".", substr)
 
-    # Direct speech - the beginning of a sentence
+    # checks the beginning of a sentence with direct speech
     substr = re.sub(r'\"[\w\d\s,\'!?.]*,\"', 'A,', substr)
 
     # Direct speech - a separate sentence
@@ -34,9 +37,63 @@ def clear_text(text):
     return substr
 
 
-def sentences_amount(text):
-    return len(re.findall(r"[.!?]", clear_text(text)))
+def get_sentences_amount(text):
+    return len(re.findall(r"[.!?]", simplify_text(text)))
 
 
-def not_declarative_sentences(text):
-    return len(re.findall(r"[!?]", clear_text(text)))
+def get_not_declarative_sentences_amount(text):
+    return len(re.findall(r"[!?]", simplify_text(text)))
+
+
+def get_average_sentence_length(text):
+    words_length = 0
+    sentences_amount = get_sentences_amount(text)
+
+    if not sentences_amount:
+        return 0
+
+    for word in split_into_words(text):
+        words_length += len(word)
+
+    return round(words_length / sentences_amount)
+
+
+def split_into_words(text):
+    # Removes all numbers
+    str = re.sub(r"\b\d+e[+-]\d+|\b\d+[.,]?\d+|\b\d+", " ", text)
+    # Removes extra character
+    str = re.sub(r"[!.?\",']", " ", str)
+    return str.split()
+
+
+def get_average_word_length(text):
+    all_words = split_into_words(text)
+
+    if not len(all_words):
+        return 0
+
+    words_length = 0
+
+    for word in all_words:
+        words_length += len(word)
+
+    return round(words_length / len(all_words))
+
+
+def n_grams(text, n=2):
+    # Change input data is very bad habit
+    no_arg_text = text.lower()
+    words = split_into_words(no_arg_text)
+    ngrams = dict()
+
+    for i in range(len(words) - (n - 1)):
+        # Gets ngram
+        ngram = " ".join(words[i: i + n])
+
+        # If ngram were founded before
+        if ngram in ngrams:
+            ngrams[ngram] += 1
+        else:
+            ngrams[ngram] = 1
+
+    return sorted(ngrams.items(), key=lambda x: x[1], reverse=True)

@@ -7,4 +7,7 @@ OTHER_ABBREVIATIONS = (r"etc\.", r"Re\.", r"p\.", r"exp\.", r"err\.", r"et\.al\.
                        r"P\.S\.S\.", r"ft\.", r"oz\.", r"pt\.", r"in\.", r"sec\.", r"\bg\.",
                        r"cm\.", r"qt\.", r"p\.m\.")
 
+K = 10
+N = 2
+
 PATH = "/home/vassyan/git/Term4_IGI/Lab2/Files/"
