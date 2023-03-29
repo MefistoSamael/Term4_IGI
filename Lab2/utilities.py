@@ -1,5 +1,6 @@
 import re
 from constants import *
+from MyContainer import MyContainer
 
 
 def simplify_text(text):
@@ -97,3 +98,40 @@ def n_grams(text, n=2):
             ngrams[ngram] = 1
 
     return sorted(ngrams.items(), key=lambda x: x[1], reverse=True)
+
+
+def menu():
+    while True:
+        username = input("Enter username: ")
+        if not username:
+            print("Try again")
+            continue
+        container = MyContainer(username)
+
+        while True:
+            answer = input(f"Do you want load data? ({AGREE}/{DISAGREE}) ")
+            if answer == AGREE:
+                break
+            elif answer == DISAGREE:
+                container.clear_data()
+                break
+
+        while True:
+            command = input("Enter command: ")
+            if command.startswith(ADD):
+                args = command.split()[1:]
+                container.add(args)
+            elif command.startswith(LIST):
+                container.list()
+            elif command.startswith(SAVE):
+                container.save()
+            elif command.startswith(LOAD):
+                container.load_data()
+            elif command.startswith(EXIT):
+                container.wanna_save()
+                return
+            elif command.startswith(REMOVE):
+                args = command.split()[1:]
+                container.remove(args)
+            elif command.startswith(HELP):
+                container.help()

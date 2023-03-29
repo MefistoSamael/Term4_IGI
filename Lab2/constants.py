@@ -11,3 +11,16 @@ K = 10
 N = 2
 
 PATH = "/home/vassyan/git/Term4_IGI/Lab2/Files/"
+CONTAINER = "Container/"
+DISAGREE = "n"
+AGREE = "y"
+ADD = "add"
+LIST = "list"
+REMOVE = "remove"
+FIND = "find"
+GREP = "grep"
+SAVE = "save"
+LOAD = "load"
+SWITCH = "switch"
+EXIT = "exit"
+HELP = "help"

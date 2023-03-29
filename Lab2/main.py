@@ -1,5 +1,5 @@
 from utilities import get_sentences_amount, get_not_declarative_sentences_amount, get_average_sentence_length,\
-                      get_average_word_length, n_grams
+                      get_average_word_length, n_grams, menu
 from constants import PATH, K, N
 import re
 
@@ -21,3 +21,7 @@ if __name__ == "__main__":
     print(f"top-{K} repeated {N}-grams in the text:")
     for gram in n_grams(text, N)[:K]:
         print(gram)
+
+    print("\nTask2\n")
+
+    menu()
