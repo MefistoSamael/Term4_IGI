@@ -1,5 +1,5 @@
 import re
-from constants import *
+from GlobalConstants import *
 from MyContainer import MyContainer
 
 
@@ -121,17 +121,31 @@ def menu():
             if command.startswith(ADD):
                 args = command.split()[1:]
                 container.add(args)
-            elif command.startswith(LIST):
-                container.list()
-            elif command.startswith(SAVE):
-                container.save()
-            elif command.startswith(LOAD):
-                container.load_data()
-            elif command.startswith(EXIT):
-                container.wanna_save()
-                return
+
             elif command.startswith(REMOVE):
                 args = command.split()[1:]
                 container.remove(args)
+
+            elif command.startswith(FIND):
+                args = command.split()[1:]
+                container.find(args)
+
+            elif command.startswith(LIST):
+                container.list()
+
+            elif command.startswith(SAVE):
+                container.save()
+
+            elif command.startswith(LOAD):
+                container.load_data()
+
+            elif command.startswith(EXIT):
+                container.wanna_save()
+                return
+
+            elif command.startswith(SWITCH):
+                args = command.split()[1:]
+                container.switch(args)
+
             elif command.startswith(HELP):
                 container.help()

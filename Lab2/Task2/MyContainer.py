@@ -1,10 +1,3 @@
-from json import load, dump
-from re import match, compile
-from GlobalConstants import AGREE, DISAGREE, PATH, CONTAINER, ADD, \
-    LIST, REMOVE, FIND, GREP, SAVE, LOAD, \
-    SWITCH, EXIT, HELP
-
-
 class MyContainer:
     def __init__(self, userName):
         self.userName = userName
