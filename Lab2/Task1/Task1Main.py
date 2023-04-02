@@ -1,6 +1,5 @@
 from Task1.Task1Utilities import get_sentences_amount, get_not_declarative_sentences_amount, \
-    get_average_sentence_length, \
-    get_average_word_length, n_grams
+    get_average_sentence_length, get_average_word_length, n_grams
 
 from Task1.Task1Constants import TEST_FILE_PATH
 
@@ -9,7 +8,6 @@ from GlobalConstants import AGREE, DISAGREE
 
 def task1_main():
     text = get_text()
-
     print(text)
 
     sentences_amount(text)
@@ -69,14 +67,14 @@ def NGrams(text):
             K = 10
             break
 
-    n_grams_list = n_grams(text, N)
+    n_grams_list = n_grams(text, N, K)
 
     if len(n_grams_list) < K:
         print("K are bigger, then amount of  N-grams\n")
 
     print(f"top-{K} repeated {N}-grams in the text:")
 
-    for n_gram in n_grams_list[:K]:
+    for n_gram in n_grams_list:
         print(n_gram)
 
 
@@ -87,7 +85,7 @@ def input_N():
         except:
             print(f"Sir, N must be an positive integer.\n")
         else:
-            if N < 0:
+            if N <= 0:
                 print(f"Sir, N must be an positive integer.\n")
             else:
                 return N
@@ -100,7 +98,7 @@ def input_K():
         except:
             print(f"Sir, K must be an positive integer.\n")
         else:
-            if K < 0:
+            if K <= 0:
                 print(f"Sir, K must be an positive integer.\n")
             else:
                 return K

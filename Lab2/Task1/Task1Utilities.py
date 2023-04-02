@@ -36,6 +36,8 @@ def simplify_text(text):
         substr = re.sub(abbr + BEGINNING_SENTENCE, ". ", substr)
         substr = re.sub(abbr, " ", substr)
 
+    print(substr)
+
     return substr
 
 
@@ -82,7 +84,7 @@ def get_average_word_length(text):
     return round(words_length / len(all_words))
 
 
-def n_grams(text, n):
+def n_grams(text, n, k):
     # Change input data is very bad habit
     no_arg_text = text.lower()
     words = split_into_words(no_arg_text)
@@ -98,4 +100,4 @@ def n_grams(text, n):
         else:
             ngrams[ngram] = 1
 
-    return sorted(ngrams.items(), key=lambda x: x[1], reverse=True)
+    return sorted(ngrams.items(), key=lambda x: x[1], reverse=True)[:k]
