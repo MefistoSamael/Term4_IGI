@@ -1,9 +1,7 @@
 from Task1.Task1Utilities import get_sentences_amount, get_not_declarative_sentences_amount, \
     get_average_sentence_length, get_average_word_length, n_grams
 
-from Task1.Task1Constants import TEST_FILE_PATH
-
-from GlobalConstants import AGREE, DISAGREE
+from Task1.Task1Constants import TEST_FILE_PATH, AGREE, DISAGREE
 
 
 def task1_main():

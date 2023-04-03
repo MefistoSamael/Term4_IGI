@@ -4,6 +4,7 @@ from GlobalConstants import PATH, K, N
 import re
 """
 from Task1.Task1Main import task1_main
+from Task2.Task2Constants import COMMANDS
 
 
 def main():

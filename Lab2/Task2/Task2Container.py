@@ -1,3 +1,9 @@
+from json import load, dump
+from re import match, compile
+from Task2.Task2Constants import COMMANDS, CONTAINER
+from GlobalConstants import FILES_PATH
+
+
 class MyContainer:
     def __init__(self, userName):
         self.userName = userName
@@ -40,11 +46,11 @@ class MyContainer:
         if self.userName not in self.container:
             self.container[self.userName] = []
 
-        with open(PATH + CONTAINER + "data.json", 'w') as file:
+        with open(CONTAINER + "data.json", 'w') as file:
             dump(self.container, file)
 
     def load_container(self):
-        with open(PATH + CONTAINER + "data.json", 'r') as file:
+        with open(CONTAINER + "data.json", 'r') as file:
             self.container = load(file)
 
     def clear_data(self):
@@ -60,11 +66,11 @@ class MyContainer:
 
     def wanna_save(self):
         while True:
-            command = input(f"wanna save some data ({AGREE}/{DISAGREE})")
-            if command == AGREE:
+            command = input(f"wanna save some data ({COMMANDS.AGREE}/{COMMANDS.DISAGREE})")
+            if command == COMMANDS.AGREE:
                 self.save()
                 break
-            elif command == DISAGREE:
+            elif command == COMMANDS.DISAGREE:
                 break
 
     def switch(self, ListUserName):
@@ -83,6 +89,7 @@ class MyContainer:
 
         return 1
 
-    def help(self):
+    def help():
         print(f"commands list:"
-              f"{ADD}\n{REMOVE}\n{FIND}\n{LIST}\n{GREP}\n{SAVE}\n{LOAD}\n{SWITCH}")
+              f"{COMMANDS.ADD}\n{COMMANDS.REMOVE}\n{COMMANDS.FIND}\n{COMMANDS.LIST}"
+              f"\n{COMMANDS.GREP}\n{COMMANDS.SAVE}\n{COMMANDS.LOAD}\n{COMMANDS.SWITCH}")

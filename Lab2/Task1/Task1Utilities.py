@@ -36,8 +36,6 @@ def simplify_text(text):
         substr = re.sub(abbr + BEGINNING_SENTENCE, ". ", substr)
         substr = re.sub(abbr, " ", substr)
 
-    print(substr)
-
     return substr
 
 

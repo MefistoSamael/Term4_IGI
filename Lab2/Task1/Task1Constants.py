@@ -31,3 +31,9 @@ INITIALS = r"[A-Z]\. [A-Z]\. [A-Z]"
 BEGINNING_SENTENCE = r"\s[A-Z]"
 END_OF_ALL_SENTENCE = r"\w[.!?]"
 END_OF_SENTENCE = r"\w[!?]"
+
+# Commands
+
+DISAGREE = 'n'
+AGREE = 'y'
+
