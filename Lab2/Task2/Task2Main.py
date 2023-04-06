@@ -1,54 +1,27 @@
-from Task2.Task2Constants import COMMANDS, ERRORS
+from Task2.Task2Constants import COMMANDS, ERRORS, CONTAINER_OUTPUT
 from Task2.Task2Constants import LOAD_DATA, INPUT_COMMAND, INPUT_USERNAME
 from Task2.Task2Container import MyContainer
 from Task2.Task2ErrorHandler import ErrorHandler
+from Task2.Task2ContainerOutputHandler import ContainerOutputHandler
 
 
 def task2_main():
-    while True:
-        container = handle_username_input()
+    # Username input part
+    container = handle_username_input()
 
-        handle_data_load(container)
+    # Load data part
+    handle_data_load(container)
 
-        while True:
-            command = input(INPUT_COMMAND)
-            if command.startswith(COMMANDS.ADD):
-                args = command.split()[1:]
-                container.add(args)
-
-            elif command.startswith(COMMANDS.REMOVE):
-                args = command.split()[1:]
-                container.remove(args)
-
-            elif command.startswith(COMMANDS.FIND):
-                args = command.split()[1:]
-                container.find(args)
-
-            elif command.startswith(COMMANDS.LIST):
-                container.list()
-
-            elif command.startswith(COMMANDS.SAVE):
-                container.save()
-
-            elif command.startswith(COMMANDS.LOAD):
-                container.load_data()
-
-            elif command.startswith(COMMANDS.EXIT):
-                container.wanna_save()
-                return
-
-            elif command.startswith(COMMANDS.SWITCH):
-                args = command.split()[1:]
-                container.switch(args)
-
-            elif command.startswith(COMMANDS.HELP):
-                container.help()
+    # Users command computing part
+    handle_command_input(container)
 
 
+# Handles username input
 def handle_username_input():
     while True:
         username = input_username()
 
+        # If any name where entered, then its valid
         if type(username) == type(""):
             return MyContainer(username)
         else:
@@ -62,26 +35,76 @@ def handle_username_input():
 
 def handle_data_load(container):
     while True:
-        check_state = load_data(container)
+        # Loads data and proceeds value that returns method load_data
+        check_state = ContainerOutputHandler.HandleContainerOutput(load_data(container))
 
-        match check_state:
-            case ERRORS.VALID:
-                return
-
-            case ERRORS.INVALID_COMMAND:
-                ErrorHandler.handle_invalid_command()
-
-            case _:
-                ErrorHandler.handle_unexpected_error()
+        # If everything where good
+        if check_state == ERRORS.VALID:
+            return
 
 
 def handle_command_input(container):
-    pass
+    while True:
+        # Command enter
+        commandExpression = input_command(container)
+
+        # If error occurred - handle error
+        if type(commandExpression) == type(ERRORS.EMPTY_INPUT):
+            match commandExpression:
+                case ERRORS.EMPTY_INPUT:
+                    ErrorHandler.handle_empty_input()
+                case ERRORS.UNEXPECTED_ERROR:
+                    ErrorHandler.handle_unexpected_error()
+                case ERRORS.INVALID_COMMAND:
+                    ErrorHandler.handle_invalid_command()
+        # If everything is good - beginning to handle command
+        else:
+            # Gets command itself
+            command = commandExpression[0]
+            # Gets arguments of command
+            args = commandExpression[1][0:]
+            # To see how I work with command input check method input_command
+
+            match command:
+                case COMMANDS.ADD:
+                    ContainerOutputHandler.HandleContainerOutput(container.add(args))
+
+                case COMMANDS.REMOVE:
+                    ContainerOutputHandler.HandleContainerOutput(container.remove(args))
+
+                # Empty arguments must be proceeded
+                case COMMANDS.FIND:
+                    ContainerOutputHandler.HandleContainerOutput(container.find(args))
+
+                case COMMANDS.LIST:
+                    container.list()
+
+                case COMMANDS.GREP:
+                    ContainerOutputHandler.HandleContainerOutput(container.grep(args))
+
+                case COMMANDS.SAVE:
+                    ContainerOutputHandler.HandleContainerOutput(container.save())
+
+                case COMMANDS.LOAD:
+                    ContainerOutputHandler.HandleContainerOutput(container.load_data())
+
+                case COMMANDS.EXIT:
+                    ContainerOutputHandler.HandleContainerOutput(container.wanna_save())
+                    return
+
+                case COMMANDS.SWITCH:
+                    ContainerOutputHandler.HandleContainerOutput(container.switch(args))
+
+                case COMMANDS.HELP:
+                    container.help()
+
+                case _:
+                    ErrorHandler.handle_invalid_command()
 
 
 # Gets command from input.
 # If command not empty and contains in COMMANDS
-# method returns corresponding command
+# method returns tuple of corresponding command(enum) and its arguments
 def input_command(container):
     command = input(INPUT_COMMAND)
 
@@ -101,8 +124,12 @@ def input_command(container):
     # If input isn't empty - main check:
     # Commands check
 
-    if COMMANDS.CONTAINS(command):
-        return command
+    # variable command - contains of command itself and its arguments,
+    #  for example: 'add a, b, c'. So I divided it,  and command[0] will return command itself
+    command = command.split()
+    if COMMANDS.CONTAINS(command[0]):
+        # Gets corresponding enum from COMMANDS, adds to it arguments of command and return it as tuple
+        return COMMANDS.GETITEM(command[0]), command[1:]
     else:
         return ERRORS.INVALID_COMMAND
 
@@ -115,24 +142,26 @@ def input_username():
     if check_state == ERRORS.VALID:
         return username
     else:
+        # Returns the certain ERROR
         return check_state
 
 
 # Loads data
 def load_data(container):
-    answer = input(f"{LOAD_DATA} ({COMMANDS.AGREE}/{COMMANDS.DISAGREE}) ")
+    answer = input(f"{LOAD_DATA} ({COMMANDS.AGREE.value}/{COMMANDS.DISAGREE.value}) ")
 
     match answer:
-
+        # If person agrees to load data
         case COMMANDS.AGREE.value:
-            return ERRORS.VALID
+            return container.load_data()
 
+        # If person disagrees to load data
         case COMMANDS.DISAGREE.value:
-            container.clear_data()
-            return ERRORS.VALID
+            return CONTAINER_OUTPUT.VALID
 
+        # If something went wrong
         case _:
-            return ERRORS.INVALID_COMMAND
+            return CONTAINER_OUTPUT.UNEXPECTED_ERROR
 
 
 # Checks, if username is valid returns ERRORS.VALID

@@ -1,95 +1,175 @@
+import re
 from json import load, dump
 from re import match, compile
-from Task2.Task2Constants import COMMANDS, CONTAINER
-from GlobalConstants import FILES_PATH
+from Task2.Task2Constants import COMMANDS, CONTAINER, CONTAINER_OUTPUT, SAVE_DATA, COMMANDS_LIST
 
 
 class MyContainer:
     def __init__(self, userName):
         self.userName = userName
-        self.container = {}
+        self.user_container = []
+        self.file = {}
 
-        self.load_container()
-        if self.userName not in self.container:
-            self.container[self.userName] = []
+        self.load_file()
 
-    def add(self, *args):
-        for element in args:
-            if element not in self.container[self.userName]:
-                self.container[self.userName].append(element)
+    # Add element or elements in the container
+    # Takes string if adding one element
+    # Takes list if adding multiply elements
+    def add(self, arg):
+        if not arg:
+            return CONTAINER_OUTPUT.EMPTY_ARGUMENTS
 
+        # If got arg, as one element
+        if type(arg) == type(''):
+            if arg not in self.user_container:
+                self.user_container.append(arg)
+        # If got arg as list of elements
+        else:
+            # Adding elements to the container
+            for element in arg:
+                if element not in self.user_container:
+                    self.user_container.append(element)
+
+        return CONTAINER_OUTPUT.VALID
+
+    # Removes element from the container
     def remove(self, element):
-        if self.userName not in self.container or element not in self.container[self.userName]:
-            return -1
+        # Gets first item from element, if there is any items
+        if element:
+            element = element[0]
         else:
-            self.container[self.userName].remove(element)
+            return CONTAINER_OUTPUT.EMPTY_ARGUMENTS
 
-    def find(self, element):
-        if not self.container[self.userName]:
-            print("nothing to delete")
-            return
-        elif self.container[self.userName].__contains__(element):
-            print(element)
+        # Deleting part
+        if element not in self.user_container:
+            return CONTAINER_OUTPUT.NOTHING_TO_DELETE
         else:
-            print("No such elements")
+            self.user_container.remove(element)
+            return CONTAINER_OUTPUT.VALID
 
+    # Finds elements or element in the container
+    def find(self, arg):
+        # Check block
+        # Empty container check
+        if not self.user_container:
+            return CONTAINER_OUTPUT.EMPTY_CONTAINER
+        # Empty argument check
+        if not arg:
+            return CONTAINER_OUTPUT.EMPTY_ARGUMENTS
 
+        # If got arg, as one element
+        if type(arg) == type(''):
+            if arg not in self.user_container:
+                return CONTAINER_OUTPUT.NO_SUCH_ELEMENT
+            else:
+                print(arg)
+                return CONTAINER_OUTPUT.VALID
+        # If got arg as list of elements
+        else:
+            # Finding elements in the container
+            # Variable to check if element where founded. It determines what method will return:
+            # VALID, if element where founded or
+            # NO_SUCH_ELEMENT, if no elements where founded in the container
+            element_where_founded = 0
+            for element in arg:
+                if element in self.user_container:
+                    print(element)
+                    element_where_founded = 1
 
+            if element_where_founded:
+                return CONTAINER_OUTPUT.VALID
+            else:
+                return CONTAINER_OUTPUT.NO_SUCH_ELEMENT
 
     def list(self):
-        print(self.container[self.userName])
+        print(self.user_container)
 
-    def grep(self):
-        pass
+    def grep(self, reg):
+        # Check block
+        # Empty container check
+        if not self.user_container:
+            return CONTAINER_OUTPUT.EMPTY_CONTAINER
+        # Empty argument check
+        if not reg:
+            return CONTAINER_OUTPUT.EMPTY_ARGUMENTS
+        else:
+            # Getting first argument
+            reg = reg[0]
 
+        try:
+            reg_match = [element for element in self.user_container if match(compile(reg), element)]
+        except re.error:
+            return CONTAINER_OUTPUT.INVALID_REGEX
+
+        if reg_match:
+            print("Matched elements: ")
+            for elem in reg_match:
+                print(elem)
+            return CONTAINER_OUTPUT.VALID
+        else:
+            return CONTAINER_OUTPUT.NO_SUCH_ELEMENT
+
+
+    # Saves all data in file
     def save(self):
-        if self.userName not in self.container:
-            self.container[self.userName] = []
+        # Saving data in dictionary of all users and its containers
+        self.file[self.userName] = self.user_container
 
         with open(CONTAINER + "data.json", 'w') as file:
-            dump(self.container, file)
+            dump(self.file, file)
 
-    def load_container(self):
+        return CONTAINER_OUTPUT.VALID
+
+    # Loads all data from file to dictionary
+    def load_file(self):
         with open(CONTAINER + "data.json", 'r') as file:
-            self.container = load(file)
+            self.file = load(file)
 
-    def clear_data(self):
-        if self.userName in self.container:
-            self.container[self.userName] = []
-
+    # Loads container from the file and updates the file in class
     def load_data(self):
-        data = self.container[self.userName]
-        self.load_container()
-        for element in data:
-            if element not in self.container[self.userName]:
-                self.container[self.userName].append(element)
+        # Saving the data from current container
+        data = self.user_container
+        # This load is needed to maintain actual data in dictionary
+        self.load_file()
 
+        # If user tries to load data from file, and there is no data in this file, connected to user
+        if not self.file.get(self.userName):
+            return CONTAINER_OUTPUT.EMPTY_CONTAINER
+
+        # Loading data from loaded container
+        self.add(self.file[self.userName])
+        return CONTAINER_OUTPUT.VALID
+
+    # Asks if user want to save some data, and saves it if user agrees
     def wanna_save(self):
         while True:
-            command = input(f"wanna save some data ({COMMANDS.AGREE}/{COMMANDS.DISAGREE})")
-            if command == COMMANDS.AGREE:
+            command = input(f"{SAVE_DATA} ({COMMANDS.AGREE.value}/{COMMANDS.DISAGREE.value})")
+            if command == COMMANDS.AGREE.value:
                 self.save()
-                break
-            elif command == COMMANDS.DISAGREE:
-                break
+                return CONTAINER_OUTPUT.VALID
 
+            elif command == COMMANDS.DISAGREE.value:
+                return CONTAINER_OUTPUT.VALID
+
+    # Switches user
     def switch(self, ListUserName):
         if not ListUserName:
-            return 0
+            return CONTAINER_OUTPUT.EMPTY_ARGUMENTS
 
         self.wanna_save()
+
+        # Cleans up container of lust user
+        self.user_container = []
 
         # This string is needed because when user inputs userName, after
         # switch command, it gives list in function
         true_user_name = ListUserName[0]
 
         self.userName = true_user_name
-        if self.userName not in self.container:
-            self.container[self.userName] = []
+        if self.userName not in self.file:
+            self.user_container = []
 
-        return 1
+        return CONTAINER_OUTPUT.VALID
 
-    def help():
-        print(f"commands list:"
-              f"{COMMANDS.ADD}\n{COMMANDS.REMOVE}\n{COMMANDS.FIND}\n{COMMANDS.LIST}"
-              f"\n{COMMANDS.GREP}\n{COMMANDS.SAVE}\n{COMMANDS.LOAD}\n{COMMANDS.SWITCH}")
+    def help(self):
+        print(COMMANDS_LIST)
