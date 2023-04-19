@@ -65,6 +65,7 @@ def split_into_words(text):
     str = re.sub(ALL_NUMBERS, " ", text)
     # Removes extra character
     str = re.sub(EXTRA_CHARACTERS, " ", str)
+    str = re.sub(":", " ",str)
     return str.split()
 
 

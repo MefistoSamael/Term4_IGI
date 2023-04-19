@@ -6,7 +6,6 @@ import MyConstants
 def task1():
     print(MyConstants.greetings_message)
 
-
 # Evaluates expression, that consists of
 # number1 operation number2
 def task21(number1, number2, operation):
