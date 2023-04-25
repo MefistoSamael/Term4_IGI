@@ -11,8 +11,8 @@ def serialize(obj):
         return serialize_base_types(obj)
 
     # Serializing none-type
-    elif not obj:
-        return serialize_none_type
+    elif isinstance(obj, types.NoneType):
+        return serialize_none_type()
 
     # Serializing list, tuple, frozenset, set, bytes, bytearray
     elif isinstance(obj, tuple(SIMILAR_COLLECTIONS.values())):
@@ -21,9 +21,12 @@ def serialize(obj):
     # Serializing dict
     elif isinstance(obj, dict):
         return serialize_dict(obj)
-
+    # Serializing functions
     elif inspect.isfunction(obj):
         return serialize_function(obj)
+
+    elif inspect.iscode(obj):
+        return serialize_code(obj)
 
 
 def get_obj_type(obj):
@@ -68,6 +71,8 @@ def serialize_function(obj):
 
     srz["value"] = full_function_serialize(obj)
 
+    return srz
+
 
 def full_function_serialize(obj):
     value = dict()
@@ -75,7 +80,7 @@ def full_function_serialize(obj):
     value["__name__"] = obj.__name__
     value["__globals__"] = get_globals(obj)
 
-    arguments = {key: serialize(value) for key, value in inspect.getmembers(serialize_function.__code__)
+    arguments = {key: serialize(value) for key, value in inspect.getmembers(obj.__code__)
                  if key in CODE_PROPERTIES}
 
     value["__code__"] = arguments
@@ -84,22 +89,32 @@ def full_function_serialize(obj):
 
 
 def get_globals(obj):
-    glo_balls = dict()
+    globs = dict()
 
-    for glo_ball_variable in obj.__code__.co_names:
+    for global_variable in obj.__code__.co_names:
 
-        if glo_ball_variable in obj.__globals__:
+        if global_variable in obj.__globals__:
 
-            if isinstance(obj.__globals__[glo_ball_variable], types.ModuleType):
-                glo_balls[glo_ball_variable] = serialize(obj.__globals__[glo_ball_variable].__name__)
+            if isinstance(obj.__globals__[global_variable], types.ModuleType):
+                globs[" ".join(["module", global_variable])] = serialize(
+                    obj.__globals__[global_variable].__name__)
 
-            elif glo_ball_variable != obj.__code__.co_name:
-                glo_balls[glo_ball_variable] = serialize(obj.__globals__[glo_ball_variable])
+            elif global_variable != obj.__code__.co_name:
+                globs[global_variable] = serialize(obj.__globals__[global_variable])
 
             else:
-                glo_balls[glo_ball_variable] = serialize(obj.__name__)
+                globs[global_variable] = serialize(obj.__name__)
 
-    return glo_balls
+    return globs
+
+
+def serialize_code(obj):
+    srz = dict()
+
+    srz["type"] = "__code__"
+    srz["value"] = {key: serialize(value) for key, value in inspect.getmembers(obj)
+                    if key in CODE_PROPERTIES}
+    return srz
 
 
 def deserialize(obj):
@@ -108,6 +123,12 @@ def deserialize(obj):
 
     elif obj["type"] in str(BASE_COLLECTIONS):
         return deserialize_base_collections(obj)
+
+    elif obj["type"] == "code":
+        return deserialize_code(obj["value"])
+
+    elif obj["type"] == "function":
+        return deserialize_function(obj["value"])
 
 
 def deserialize_base_type(obj):
@@ -127,15 +148,42 @@ def deserialize_base_collections(obj):
         return BASE_COLLECTIONS[collection_type]({deserialize(item[0]): deserialize(item[1]) for item in obj["value"]})
 
 
+def deserialize_code(code):
+    return types.CodeType(*(deserialize(code[prop]) for prop in CODE_PROPERTIES))
+
+
+def deserialize_function(func):
+    code = func["__code__"]
+    globs = func["__globals__"]
+
+    des_globals = deserialize_globals(globs, func)
+
+    codeType = deserialize_code(code)
+
+    des_function = types.FunctionType(code=codeType, globals=des_globals)
+    des_function.__globals__.update({des_function.__name__: des_function})
+
+    return des_function
+
+
+def deserialize_globals(globs, func):
+    des_globals = dict()
+
+    for glob in globs:
+        if "module" in glob:
+            des_globals[globs[glob]["value"]] = __import__(globs[glob]["value"])
+
+        elif globs[glob] != func["__name__"]:
+            des_globals[glob] = deserialize(globs[glob])
+
+    return des_globals
+
+
 def MiniMain():
-    # print(inspect.getmembers(serialize_function.__code__))
+    code = serialize(serialize_code)
+    deserialize(code)
 
-    args = dict()
-
-    args = {key: value for key, value in inspect.getmembers(serialize_function.__code__) if key in CODE_PROPERTIES}
-    print(args)
     a = serialize({1: 2, 3: 4, (5, 6, 7): 6})
-    print(deserialize(a))
 
 
 MiniMain()
