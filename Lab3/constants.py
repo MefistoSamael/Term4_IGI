@@ -1,3 +1,5 @@
+import types
+
 BASE_TYPES = {"str": str, "int": int, "bool": bool, "float": float, "complex": complex}
 
 SIMILAR_COLLECTIONS = {"list": list, "tuple": tuple, "frozenset": frozenset, "set": set, "bytes": bytes,
@@ -22,3 +24,14 @@ CODE_PROPERTIES = ("co_argcount",
                    "co_linetable",
                    "co_freevars",
                    "co_cellvars")
+
+CLASS_PROPERTIES = ("__name__", "__base__",
+                          "__basicsize__", "__dictoffset__", "__class__")
+
+TYPESES = (
+                types.WrapperDescriptorType,
+                types.MethodDescriptorType,
+                types.BuiltinFunctionType,
+                types.GetSetDescriptorType,
+                types.MappingProxyType
+            )

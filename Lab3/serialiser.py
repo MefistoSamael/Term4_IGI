@@ -2,7 +2,7 @@ import inspect
 import re
 import types
 
-from constants import BASE_TYPES, SIMILAR_COLLECTIONS, CODE_PROPERTIES, BASE_COLLECTIONS
+from constants import BASE_TYPES, SIMILAR_COLLECTIONS, CODE_PROPERTIES, BASE_COLLECTIONS, CLASS_PROPERTIES, TYPESES
 
 
 def serialize(obj):
@@ -21,12 +21,20 @@ def serialize(obj):
     # Serializing dict
     elif isinstance(obj, dict):
         return serialize_dict(obj)
+
     # Serializing functions
     elif inspect.isfunction(obj):
         return serialize_function(obj)
 
+    # Serializing code
     elif inspect.iscode(obj):
         return serialize_code(obj)
+
+    elif isinstance(obj, types.CellType):
+        return serialize_cell(obj)
+
+    elif inspect.isclass(obj):
+        return serialize_class(obj)
 
 
 def get_obj_type(obj):
@@ -53,7 +61,7 @@ def serialize_none_type():
     srz = dict()
 
     srz["type"] = "NoneType"
-    srz["value"] = None
+    srz["value"] = "definitely none"
     return srz
 
 
@@ -74,11 +82,13 @@ def serialize_function(obj):
     return srz
 
 
-def full_function_serialize(obj):
+def full_function_serialize(obj, cls=None):
     value = dict()
 
     value["__name__"] = obj.__name__
-    value["__globals__"] = get_globals(obj)
+    value["__globals__"] = get_globals(obj, cls)
+
+    value["__closure__"] = serialize(obj.__closure__)
 
     arguments = {key: serialize(value) for key, value in inspect.getmembers(obj.__code__)
                  if key in CODE_PROPERTIES}
@@ -88,7 +98,7 @@ def full_function_serialize(obj):
     return value
 
 
-def get_globals(obj):
+def get_globals(obj, cls=None):
     globs = dict()
 
     for global_variable in obj.__code__.co_names:
@@ -98,6 +108,11 @@ def get_globals(obj):
             if isinstance(obj.__globals__[global_variable], types.ModuleType):
                 globs[" ".join(["module", global_variable])] = serialize(
                     obj.__globals__[global_variable].__name__)
+
+            elif inspect.isclass(obj.__globals__[global_variable]):
+
+                if cls and obj.__globals__[global_variable] != cls or not cls:
+                    globs[global_variable] = serialize(obj.__globals__[global_variable])
 
             elif global_variable != obj.__code__.co_name:
                 globs[global_variable] = serialize(obj.__globals__[global_variable])
@@ -117,6 +132,55 @@ def serialize_code(obj):
     return srz
 
 
+def serialize_cell(obj):
+    srz = dict()
+
+    srz["type"] = "cell"
+    srz["value"] = serialize(obj.cell_contents)
+
+    return srz
+
+
+def serialize_class(obj):
+    srz = dict()
+
+    srz["type"] = "class"
+    srz["value"] = full_class_serialize(obj)
+
+    return srz
+
+
+def full_class_serialize(obj):
+    srz = dict()
+    srz["__name__"] = serialize(obj.__name__)
+
+    for mini_member in obj.__dict__:
+        member = [mini_member, obj.__dict__[mini_member]]
+
+        if member[0] in CLASS_PROPERTIES or type(member[1]) in TYPESES:
+            continue
+
+        if isinstance(obj.__dict__[member[0]], staticmethod):
+            srz[member[0]]["type"] = "staticmethod"
+            srz[member[0]]["value"] = serialize_function(obj)
+
+        elif isinstance(obj.__dict__[member[0]], classmethod):
+            srz[member[0]]["type"] = "classmethod"
+            srz[member[0]]["value"] = serialize_function(obj)
+
+        elif inspect.isfunction(member[1]):
+            srz[member[0]]["type"] = "function"
+            srz[member[0]]["value"] = full_function_serialize(member[1], obj)
+
+        else:
+            srz[member[0]] = serialize(member[1])
+
+    srz["__bases__"]["type"] = "tuple"
+    srz["__bases__"]["value"] = [serialize(base) for base in obj.__bases__ if base != object]
+
+    return srz
+
+
 def deserialize(obj):
     if obj["type"] in str(BASE_TYPES):
         return deserialize_base_type(obj)
@@ -129,6 +193,12 @@ def deserialize(obj):
 
     elif obj["type"] == "function":
         return deserialize_function(obj["value"])
+
+    elif obj["type"] == "cell":
+        return deserialize_cell(obj)
+
+    elif obj["type"] == "class":
+        return deserialize_class(obj["value"])
 
 
 def deserialize_base_type(obj):
@@ -155,12 +225,18 @@ def deserialize_code(code):
 def deserialize_function(func):
     code = func["__code__"]
     globs = func["__globals__"]
+    func_closure = func["__closure__"]
 
     des_globals = deserialize_globals(globs, func)
 
+    cl = deserialize(func_closure)
+    if cl:
+        closure = tuple(cl)
+    else:
+        closure = tuple()
     codeType = deserialize_code(code)
 
-    des_function = types.FunctionType(code=codeType, globals=des_globals)
+    des_function = types.FunctionType(code=codeType, globals=des_globals, closure=closure)
     des_function.__globals__.update({des_function.__name__: des_function})
 
     return des_function
@@ -179,10 +255,22 @@ def deserialize_globals(globs, func):
     return des_globals
 
 
-def MiniMain():
-    code = serialize(serialize_code)
-    deserialize(code)
+def deserialize_cell(obj):
+    return types.CellType(deserialize(obj["value"]))
 
+
+def deserialize_class(obj):
+    bases = deserialize(obj["__bases__"])
+
+    members = {member: deserialize(value) for member, value in obj.items()}
+
+    cls = type(deserialize(obj["__name__"]), bases, members)
+
+    [member.__globals__.update({cls.__name__: cls}) for k, member in members.items() if inspect.isfunction(member)]
+
+    return cls
+
+def MiniMain():
     a = serialize({1: 2, 3: 4, (5, 6, 7): 6})
 
 
