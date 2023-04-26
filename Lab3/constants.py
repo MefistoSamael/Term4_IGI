@@ -8,6 +8,8 @@ SIMILAR_COLLECTIONS = {"list": list, "tuple": tuple, "frozenset": frozenset, "se
 BASE_COLLECTIONS = {"list": list, "tuple": tuple, "frozenset": frozenset, "set": set, "bytes": bytes,
                     "bytearray": bytearray, "dict": dict}
 
+METHODS = {"staticmethod": staticmethod, "classmethod": classmethod}
+
 CODE_PROPERTIES = ("co_argcount",
                    "co_posonlyargcount",
                    "co_kwonlyargcount",

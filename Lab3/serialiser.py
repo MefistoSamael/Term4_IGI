@@ -2,7 +2,8 @@ import inspect
 import re
 import types
 
-from constants import BASE_TYPES, SIMILAR_COLLECTIONS, CODE_PROPERTIES, BASE_COLLECTIONS, CLASS_PROPERTIES, TYPESES
+from constants import BASE_TYPES, SIMILAR_COLLECTIONS, CODE_PROPERTIES, BASE_COLLECTIONS, CLASS_PROPERTIES, TYPESES, \
+    METHODS
 
 
 def serialize(obj):
@@ -35,6 +36,9 @@ def serialize(obj):
 
     elif inspect.isclass(obj):
         return serialize_class(obj)
+
+    else:
+        return serialize_object(obj)
 
 
 def get_obj_type(obj):
@@ -181,6 +185,26 @@ def full_class_serialize(obj):
     return srz
 
 
+def serialize_object(obj):
+    srz = dict()
+
+    srz["type"] = "object"
+    srz["value"] = full_object_serialization(obj)
+
+    return srz
+
+
+def full_object_serialization(obj):
+    value = dict()
+
+    value["__class__"] = serialize(obj.__class__)
+
+    value["__members__"] = {key: serialize(value) for key, value in inspect.getmembers(obj)
+                            if not key.startswith("__") or not inspect.isfunction(value) or not inspect.ismethod(value)}
+
+    return value
+
+
 def deserialize(obj):
     if obj["type"] in str(BASE_TYPES):
         return deserialize_base_type(obj)
@@ -199,6 +223,12 @@ def deserialize(obj):
 
     elif obj["type"] == "class":
         return deserialize_class(obj["value"])
+
+    elif obj["type"] in METHODS:
+        return METHODS[obj["type"]](deserialize(obj["value"]))
+
+    elif obj["type"] == "object":
+        return deserialize_object(obj)
 
 
 def deserialize_base_type(obj):
@@ -269,6 +299,16 @@ def deserialize_class(obj):
     [member.__globals__.update({cls.__name__: cls}) for k, member in members.items() if inspect.isfunction(member)]
 
     return cls
+
+
+def deserialize_object(obj):
+    cls = deserialize(obj["__class__"])
+
+    des = object.__new__(cls)
+    des.__dict__ = {key: deserialize(value) for key, value in obj["__members__"].items()}
+
+    return des
+
 
 def MiniMain():
     a = serialize({1: 2, 3: 4, (5, 6, 7): 6})
