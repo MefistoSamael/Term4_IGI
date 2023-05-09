@@ -2,7 +2,8 @@ import inspect
 import re
 import types
 
-from constants import BASE_TYPES, SIMILAR_COLLECTIONS, CODE_PROPERTIES, BASE_COLLECTIONS, CLASS_PROPERTIES, TYPESES, \
+
+from sir_Bychko_serializer.constants import BASE_TYPES, SIMILAR_COLLECTIONS, CODE_PROPERTIES, BASE_COLLECTIONS, CLASS_PROPERTIES, TYPESES, \
     METHODS
 
 
@@ -130,7 +131,7 @@ def get_globals(obj, cls=None):
 def serialize_code(obj):
     srz = dict()
 
-    srz["type"] = "__code__"
+    srz["type"] = "code"
     srz["value"] = {key: serialize(value) for key, value in inspect.getmembers(obj)
                     if key in CODE_PROPERTIES}
     return srz
@@ -158,27 +159,33 @@ def full_class_serialize(obj):
     srz = dict()
     srz["__name__"] = serialize(obj.__name__)
 
-    for mini_member in obj.__dict__:
-        member = [mini_member, obj.__dict__[mini_member]]
+    for key, value in obj.__dict__.items():
 
-        if member[0] in CLASS_PROPERTIES or type(member[1]) in TYPESES:
+        if key in CLASS_PROPERTIES or type(value) in TYPESES:
             continue
 
-        if isinstance(obj.__dict__[member[0]], staticmethod):
-            srz[member[0]]["type"] = "staticmethod"
-            srz[member[0]]["value"] = serialize_function(obj)
+        if isinstance(obj.__dict__[key], staticmethod):
+            srz[key] = dict()
+            srz[key]["type"] = "staticmethod"
+            srz[key]["value"] = {"type": "function", "value": full_function_serialize(value.__func__, obj)}
 
-        elif isinstance(obj.__dict__[member[0]], classmethod):
-            srz[member[0]]["type"] = "classmethod"
-            srz[member[0]]["value"] = serialize_function(obj)
+        elif isinstance(obj.__dict__[key], classmethod):
+            srz[key] = dict()
+            srz[key]["type"] = "classmethod"
+            srz[key]["value"] = {"type": "function", "value": full_function_serialize(value.__func__, obj)}
 
-        elif inspect.isfunction(member[1]):
-            srz[member[0]]["type"] = "function"
-            srz[member[0]]["value"] = full_function_serialize(member[1], obj)
+        elif inspect.ismethod(value):
+            srz[key] = full_function_serialize(value.__func__, obj)
+
+        elif inspect.isfunction(value):
+            srz[key] = dict()
+            srz[key]["type"] = "function"
+            srz[key]["value"] = full_function_serialize(value, obj)
 
         else:
-            srz[member[0]] = serialize(member[1])
+            srz[key] = serialize(value)
 
+    srz["__bases__"] = dict()
     srz["__bases__"]["type"] = "tuple"
     srz["__bases__"]["value"] = [serialize(base) for base in obj.__bases__ if base != object]
 
@@ -200,16 +207,17 @@ def full_object_serialization(obj):
     value["__class__"] = serialize(obj.__class__)
 
     value["__members__"] = {key: serialize(value) for key, value in inspect.getmembers(obj)
-                            if not key.startswith("__") or not inspect.isfunction(value) or not inspect.ismethod(value)}
+                            if not (key.startswith("__") or inspect.isfunction(value) or inspect.ismethod(value))}
 
     return value
 
 
 def deserialize(obj):
-    if obj["type"] in str(BASE_TYPES):
+
+    if obj["type"] in extract_keys(str(BASE_TYPES.keys())):
         return deserialize_base_type(obj)
 
-    elif obj["type"] in str(BASE_COLLECTIONS):
+    elif obj["type"] in str(BASE_COLLECTIONS.keys()):
         return deserialize_base_collections(obj)
 
     elif obj["type"] == "code":
@@ -228,7 +236,7 @@ def deserialize(obj):
         return METHODS[obj["type"]](deserialize(obj["value"]))
 
     elif obj["type"] == "object":
-        return deserialize_object(obj)
+        return deserialize_object(obj["value"])
 
 
 def deserialize_base_type(obj):
@@ -251,7 +259,6 @@ def deserialize_base_collections(obj):
 def deserialize_code(code):
     return types.CodeType(*(deserialize(code[prop]) for prop in CODE_PROPERTIES))
 
-
 def deserialize_function(func):
     code = func["__code__"]
     globs = func["__globals__"]
@@ -266,6 +273,7 @@ def deserialize_function(func):
         closure = tuple()
     codeType = deserialize_code(code)
 
+    des_globals["__builtins__"] = __import__("builtins")
     des_function = types.FunctionType(code=codeType, globals=des_globals, closure=closure)
     des_function.__globals__.update({des_function.__name__: des_function})
 
@@ -296,7 +304,11 @@ def deserialize_class(obj):
 
     cls = type(deserialize(obj["__name__"]), bases, members)
 
-    [member.__globals__.update({cls.__name__: cls}) for k, member in members.items() if inspect.isfunction(member)]
+    for k, member in members.items():
+        if (inspect.isfunction(member)):
+            member.__globals__.update({cls.__name__: cls})
+        elif isinstance(member, (staticmethod, classmethod)):
+            member.__func__.__globals__.update({cls.__name__: cls})
 
     return cls
 
@@ -309,7 +321,11 @@ def deserialize_object(obj):
 
     return des
 
-
+# when i did obj["type"] in str(BASE_TYPES.keys()) it returned true
+# when obj["type"] is "dict", cause str(BASE_TYPES.keys()) is dict_keys(['str', 'int', 'bool', 'float', 'complex'])
+# this function extracts ['str', 'int', 'bool', 'float', 'complex'] from str(BASE_TYPES.keys())
+def extract_keys(string):
+    return re.search(r"\[.*\]", string).group()
 def MiniMain():
     a = serialize({1: 2, 3: 4, (5, 6, 7): 6})
 

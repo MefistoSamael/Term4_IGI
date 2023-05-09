@@ -23,7 +23,7 @@ CODE_PROPERTIES = ("co_argcount",
                    "co_filename",
                    "co_name",
                    "co_firstlineno",
-                   "co_linetable",
+                   "co_lnotab",
                    "co_freevars",
                    "co_cellvars")
 
