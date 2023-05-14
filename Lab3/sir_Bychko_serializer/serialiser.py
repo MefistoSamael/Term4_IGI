@@ -177,6 +177,8 @@ def full_class_serialize(obj):
         elif inspect.ismethod(value):
             srz[key] = full_function_serialize(value.__func__, obj)
 
+
+
         elif inspect.isfunction(value):
             srz[key] = dict()
             srz[key]["type"] = "function"
@@ -192,11 +194,26 @@ def full_class_serialize(obj):
     return srz
 
 
+def serialize_property(obj):
+    val = dict()
+
+    val["fget"] = serialize(obj.fget)
+    val["fset"] = serialize(obj.fset)
+    val["fdel"] = serialize(obj.fdel)
+
+    return val
+
+
+
 def serialize_object(obj):
     srz = dict()
 
-    srz["type"] = "object"
-    srz["value"] = full_object_serialization(obj)
+    if isinstance(obj, property):
+        srz["type"] = "property"
+        srz["vavlue"] = serialize_property(obj)
+    else:
+        srz["type"] = "object"
+        srz["value"] = full_object_serialization(obj)
 
     return srz
 
