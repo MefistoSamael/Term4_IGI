@@ -1,0 +1,24 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+     <h1>Погодное приложение</h1>
+    <div class="row">
+  <form action="">
+    <label for="city">Город</label>
+    <input type="text" id="city" class="form-control" name="city" placeholder="Введите город">
+    <input type="submit" name="send" value="Узнать" class="mt-2 btn btn-danger">
+  </form>
+  <div class="col-4 offset-4">
+    <h1>информация</h1>
+    <div class="alert alert-danger">
+      погода в   
+      городе: {{ info.city }} <br>
+      температура: {{ info.temp }}<sup>0</sup> <br>
+           <img src="http://openweathermap.org/img/wn/{{ info.icon }}@2x.png" alt="фото" class="img-thumbnail">  
+</body>
+</html>
