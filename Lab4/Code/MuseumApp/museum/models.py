@@ -59,7 +59,7 @@ class Excursion(models.Model):
     guide = models.OneToOneField('Employee', on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.excursion_code
+        return self.name
 
 
 
@@ -85,9 +85,13 @@ class Exhibit(models.Model):
 
     hall = models.ForeignKey('Hall', on_delete=models.CASCADE, related_name="exhibit")
 
-    exposition = models.ForeignKey('Exposition', on_delete=models.DO_NOTHING, related_name="exhibit")
+    exposition = models.ForeignKey('Exposition', on_delete=models.DO_NOTHING, related_name="exhibit", null=True, blank=True)
 
-    exhibition = models.ForeignKey('Exhibition', on_delete=models.DO_NOTHING, related_name="exhibit")
+    exhibition = models.ForeignKey('Exhibition', on_delete=models.DO_NOTHING, related_name="exhibit", null=True, blank=True)
+
+    def display_art_form(self):
+        return ', '.join([ art_form.name for art_form in self.art_form.all()[:3] ])
+    display_art_form.short_description = 'Art form'
 
     def __str__(self):
         return self.name
