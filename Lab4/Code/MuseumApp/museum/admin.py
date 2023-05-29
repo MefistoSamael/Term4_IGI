@@ -1,7 +1,7 @@
-from datetime import date
+from datetime import datetime, timedelta, date
 from django.contrib import admin
 from .models import ArtForm, Employee, Excursion, Exhibit, Exhibition, Exposition, Hall, Position, Theme
-
+import re
 
 # admin.site.register(Theme)
 # admin.site.register(Exposition)
@@ -19,7 +19,7 @@ class SeasonListFilter(admin.SimpleListFilter):
     title = ("season")
 
     # Parameter for the filter that will be used in the URL query.
-    parameter_name = "admission_date"
+    parameter_name = "date"
 
     def lookups(self, request, model_admin):
         """
@@ -46,20 +46,56 @@ class SeasonListFilter(admin.SimpleListFilter):
         # to decide how to filter the queryset.
         if self.value() == "summer":
             return queryset.filter(
-                admission_date__month__in=range(6,9),
+                date__month__in=range(6,9),
             )
         if self.value() == "autumn":
             return queryset.filter(
-                admission_date__month__in=range(9,12),
+                date__month__in=range(9,12),
             )
         if self.value() == "winter":
             return queryset.filter(
-                admission_date__month__in=(12,1,2)
+                date__month__in=(12,1,2)
             )
         if self.value() == "spring":
             return queryset.filter(
-                admission_date__month__in=range(3,6),
+                date__month__in=range(3,6),
             )
+        
+class HalfYearListFilter(admin.SimpleListFilter):
+    # Human-readable title which will be displayed in the
+    # right admin sidebar just above the filter options.
+    title = ("6 months")
+
+    # Parameter for the filter that will be used in the URL query.
+    parameter_name = "date"
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each
+        tuple is the coded value for the option that will
+        appear in the URL query. The second element is the
+        human-readable name for the option that will appear
+        in the right sidebar.
+        """
+        return [
+            ("half_year", ("6 months")),
+        ]
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        # Compare the requested value (summer, autumn, sping, winter)
+        # to decide how to filter the queryset.
+        if self.value() == "half_year":
+            return queryset.filter(
+                admission_date__gte=datetime.now() - timedelta(weeks=25.86),
+                admission_date__lte=datetime.now(),
+            )
+
+
 
 @admin.register(Theme)
 class ThemeAdmin(admin.ModelAdmin):
@@ -76,13 +112,42 @@ class ExhibitionAdmin(admin.ModelAdmin):
 
 @admin.register(Exhibit)
 class ExhibitAdmin(admin.ModelAdmin):
-    list_display = ('name', 'display_art_form', 'admission_date', 'observer')
+    list_display = ('name', 'display_art_form', 'admission_date', 'observer',)
 
-    list_filter = [SeasonListFilter]
+    list_filter = [HalfYearListFilter]
 
 @admin.register(Hall)
 class HallAdmin(admin.ModelAdmin):
-    list_display = ('number', 'name', 'floor', 'area')
+    list_display = ('number', 'name', 'floor', 'area', 'display_exhibits_count', 'display_exhibit')
+
+    search_fields=['exhibit__admission_date']
+
+    date = datetime(1,1,1)
+
+    # displays exhibits count, which admission_date greather then entered date
+    def display_exhibits_count(self, obj):
+        return self.model.objects.filter(exhibit__admission_date__gte=self.date, name = obj).count()
+
+    # sets entered date to self.date, in the purpose of getting count
+    def get_search_results(self, request, queryset, search_term):
+
+        # this patter gets year, moth, day from user
+        # search term
+        pattern = r".*(\d{4}).*(\d{2}).*(\d{2}).*"
+
+        matches = re.search(pattern, search_term)
+        if matches:
+            year = matches.group(1)
+            month = matches.group(2)
+            day = matches.group(3)
+            self.date = datetime(int(year), int(month),int(day))
+
+        return self.model.objects, True
+    
+    def display_exhibit(self, obj):
+        return ', '.join([ exhibit.name for exhibit in obj.exhibit.filter(admission_date__gte=self.date)[:3] ])
+        
+
 
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):
@@ -96,7 +161,7 @@ class ArtFormAdmin(admin.ModelAdmin):
 
 @admin.register(Excursion)
 class ExcursionAdmin(admin.ModelAdmin):
-    pass
+    list_filter = [SeasonListFilter]
 
 @admin.register(Position)
 class PositionAdmin(admin.ModelAdmin):
