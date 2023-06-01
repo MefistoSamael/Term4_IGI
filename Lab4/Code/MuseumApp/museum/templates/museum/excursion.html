@@ -1,0 +1,29 @@
+{% extends "museum/layout.html" %}
+
+{% block content %}
+<h1>Excursions</h1>
+{% if excursion_list %}
+<ul>
+
+    {% for excursion in excursion_list %}
+    <li>
+        Name: {{ excursion.name }} 
+    </li>
+    <li>
+        Date: {{ excursion.date }}
+    </li>
+    <li>
+        Group amount: {{ excursion.group_amount }}
+    </li>
+    <li>
+        Guide: {{ excursion.guide }}
+    </li>
+    <hr/>
+
+    {% endfor %}
+
+</ul>
+{% else %}
+    <p>There are no excursion</p>
+{% endif %}
+{% endblock %}

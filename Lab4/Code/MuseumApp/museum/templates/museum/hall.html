@@ -1,0 +1,33 @@
+{% extends "museum/layout.html" %}
+
+{% block content %}
+<h1>Halls</h1>
+{% if hall_list %}
+<ul>
+
+    {% for hall in hall_list %}
+    <li>
+        Name: {{ hall.name }} 
+    </li>
+    <li>
+        Floor: {{ hall.floor }}
+    </li>
+    <li>
+        Hall number: {{ hall.number }}
+    </li>
+    <li>
+        Hall area: {{ hall.area }}
+    </li>
+
+    <li>
+        <a href="exhibits/{{ hall.id }}">View hall exibits</a>
+    </li>
+    <hr/>
+
+    {% endfor %}
+
+</ul>
+{% else %}
+    <p>There are no hall</p>
+{% endif %}
+{% endblock %}

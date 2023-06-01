@@ -112,9 +112,10 @@ class ExhibitionAdmin(admin.ModelAdmin):
 
 @admin.register(Exhibit)
 class ExhibitAdmin(admin.ModelAdmin):
-    list_display = ('name', 'display_art_form', 'admission_date', 'observer',)
+    # list_display = ('name', 'display_art_form', 'admission_date', 'observer',)
 
-    list_filter = [HalfYearListFilter]
+    # list_filter = [HalfYearListFilter]
+    pass
 
 @admin.register(Hall)
 class HallAdmin(admin.ModelAdmin):

@@ -73,6 +73,8 @@ class ArtForm(models.Model):
 
 
 class Exhibit(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, help_text="Unique ID for this particular exhibit")
+
     name = models.CharField(max_length=20, help_text="enter Xzibit name")
 
     art_form = models.ManyToManyField('ArtForm')
@@ -81,7 +83,7 @@ class Exhibit(models.Model):
 
     observer = models.ForeignKey('Employee',on_delete=models.DO_NOTHING, related_name="exhibit")
 
-    photo = models.ImageField()
+    photo = models.URLField(default='')
 
     hall = models.ForeignKey('Hall', on_delete=models.CASCADE, related_name="exhibit")
 

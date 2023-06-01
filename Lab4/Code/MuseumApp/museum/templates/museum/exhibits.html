@@ -1,0 +1,44 @@
+{% extends "museum/layout.html" %}
+
+{% block content %}
+<h1>Exhibits</h1>
+{% if exhibits %}
+<ul>
+
+    {% for exhibit in exhibits %}
+    <li>
+        Name: {{ exhibit.name }} 
+    </li>
+    <li>
+        Date: {{ exhibit.admission_date }}
+    </li>
+    <li>
+        Art form: {{ exhibit.art_form }}
+    </li>
+    <li>
+        Observer: {{ exhibit.observer }}
+    </li>
+    <li>
+        photo: <img src="{{ exhibit.photo}}" alt="Photo doesnt exist">
+    </li>
+    {% if exhibit.exposition %}
+    <li>
+        exposition: {{ exhibit.exposition }}
+    </li>
+    {% endif%}
+    {% if exhibit.exhibition %}
+    <li>
+        exhibition: {{ exhibit.exhibition }}
+    </li>
+    {% endif%}
+
+
+    <hr/>
+
+    {% endfor %}
+
+</ul>
+{% else %}
+    <p>There are no exhibit</p>
+{% endif %}
+{% endblock %}
