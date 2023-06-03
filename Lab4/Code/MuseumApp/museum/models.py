@@ -1,4 +1,6 @@
+from django.core.validators import MinLengthValidator
 from django.db import models
+from django.core.validators import RegexValidator
 
 class Hall(models.Model):
 
@@ -28,13 +30,19 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 class Employee(models.Model):
 
+    user_name = models.CharField(max_length=20, help_text="Enter user name")
+
     first_name = models.CharField(max_length=20, help_text="Enter full name")
+
+    password = models.CharField(max_length=20, validators=[MinLengthValidator(8)], help_text="Enter password. In future u cant see it in admin panel")
 
     last_name = models.CharField(max_length=20, help_text="Enter last name")
 
     hall = models.ForeignKey('Hall', on_delete=models.CASCADE, related_name="employee")
 
-    phone_number = PhoneNumberField()
+    num_validetor = RegexValidator(regex=r"^\+375 \(29\) \d{3}-\d{2}-\d{2}$")
+
+    phone_number = models.CharField(max_length=20, validators=[num_validetor], default='+375 (29) xxx-xx-xx')
 
     position = models.ForeignKey('Position', on_delete=models.CASCADE,related_name="employee")
 

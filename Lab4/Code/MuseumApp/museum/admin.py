@@ -1,5 +1,10 @@
 from datetime import datetime, timedelta, date
 from django.contrib import admin
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+from museum.forms import EmployeeForm, ExhibitForm
 from .models import ArtForm, Employee, Excursion, Exhibit, Exhibition, Exposition, Hall, Position, Theme
 import re
 
@@ -12,6 +17,14 @@ import re
 # admin.site.register(ArtForm)
 # admin.site.register(Excursion)
 # admin.site.register(Position)
+
+@receiver(post_save, sender=Employee)
+def create_user(sender, instance, created, **kwargs):
+    if created:
+        # Создание пользователя с такими же данными как у работника
+        User.objects.create_user(instance.user_name, "", instance.password)
+        # добавить изменение пароля у employee, чтобы не хранить правильный пароль
+        # а может и в пень. все равно не показывается
 
 class SeasonListFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
@@ -112,10 +125,11 @@ class ExhibitionAdmin(admin.ModelAdmin):
 
 @admin.register(Exhibit)
 class ExhibitAdmin(admin.ModelAdmin):
-    # list_display = ('name', 'display_art_form', 'admission_date', 'observer',)
+    list_display = ('name', 'display_art_form', 'admission_date', 'observer',)
 
-    # list_filter = [HalfYearListFilter]
-    pass
+    list_filter = [HalfYearListFilter]
+
+    form = ExhibitForm
 
 @admin.register(Hall)
 class HallAdmin(admin.ModelAdmin):
@@ -154,6 +168,7 @@ class HallAdmin(admin.ModelAdmin):
 class EmployeeAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'hall', 'phone_number', 'position')
 
+    form = EmployeeForm
     search_fields = ['hall__floor']
 
 @admin.register(ArtForm)

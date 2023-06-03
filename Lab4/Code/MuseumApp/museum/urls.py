@@ -1,5 +1,5 @@
 
-from django.urls import path, re_path
+from django.urls import include, path, re_path
 import museum.views
 
 
@@ -15,6 +15,7 @@ urlpatterns = [
     path('hall/exhibits/<int:id>/', museum.views.HallExibitDetailView.as_view(),name='hall_exhibits'),
     path('exposition/exhibits/<int:id>/', museum.views.ExpositionExibitDetailView.as_view(),name='exposition_exhibits'),
     path('exhibition/exhibits/<int:id>/', museum.views.ExhibitionExibitDetailView.as_view(),name='exhibition_exhibits'),
+    path('accounts/', include('django.contrib.auth.urls')),
 
 
 ]
