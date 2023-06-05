@@ -1,0 +1,15 @@
+{% extends "museum/layout.html" %}
+
+{% block title %}Info{% endblock %}
+
+{% block content %}
+  <h1>Static Info</h1>
+     <ul>
+        <li><em>Count of hals: </em>{{ halls_count }}</li>
+        <li><em>Count of exhibits: </em>{{ exhibits_count }}</li>
+        <li><em>Count of exhibitions: </em>{{ exhibitions_count }}</li>
+        <li><em>Count of expositions: </em>{{expositions_count}}</li>
+        <li><em>Count of excursions during this month: </em>{{ this_month_excursion_count }}</li>
+
+    </ul>
+{% endblock %}

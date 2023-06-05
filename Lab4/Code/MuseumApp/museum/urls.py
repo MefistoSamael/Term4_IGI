@@ -16,6 +16,9 @@ urlpatterns = [
     path('exposition/exhibits/<int:id>/', museum.views.ExpositionExibitDetailView.as_view(),name='exposition_exhibits'),
     path('exhibition/exhibits/<int:id>/', museum.views.ExhibitionExibitDetailView.as_view(),name='exhibition_exhibits'),
     path('accounts/', include('django.contrib.auth.urls')),
-
+    path('user/',museum.views.UserAccountView.as_view(), name='user_account' ),
+    path('user/exhibits/', museum.views.EmployeeExhibitDetailView.as_view(),name='user_exhibits'),
+    path('info/', museum.views.InfoView.as_view(), name='info'),
+    path('diagram/', museum.views.DiagramView.as_view(), name='diagram'),
 
 ]

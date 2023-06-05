@@ -1,0 +1,31 @@
+{% extends "museum/layout.html" %}
+
+{% block content %}
+<h1>My Account</h1>
+<ul>
+
+    <li>
+        Username: {{ employee.user_name }} 
+    </li>
+    <li>
+        First name: {{ employee.first_name }}
+    </li>
+    <li>
+        Last name: {{ employee.last_name }}
+    </li>
+    <li>
+        Hall: {{ employee.hall }}
+    </li>
+    <li>
+        Phone number: {{employee.phone_number}}
+    </li>
+    <li>
+        Position: {{employee.position}}
+    </li>
+    <li>
+        <a href="exhibits/">My exhibits</a>
+    </li>
+    <hr/>
+
+</ul>
+{% endblock %}

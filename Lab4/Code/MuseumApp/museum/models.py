@@ -34,8 +34,6 @@ class Employee(models.Model):
 
     first_name = models.CharField(max_length=20, help_text="Enter full name")
 
-    password = models.CharField(max_length=20, validators=[MinLengthValidator(8)], help_text="Enter password. In future u cant see it in admin panel")
-
     last_name = models.CharField(max_length=20, help_text="Enter last name")
 
     hall = models.ForeignKey('Hall', on_delete=models.CASCADE, related_name="employee")

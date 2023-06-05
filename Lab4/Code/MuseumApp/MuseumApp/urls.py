@@ -23,7 +23,7 @@ urlpatterns = [
     path('', include('museum.urls')),
 
 
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls, name='admin'),
 
 ]
 
