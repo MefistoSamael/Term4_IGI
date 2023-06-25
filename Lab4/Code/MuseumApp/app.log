@@ -1,0 +1,12 @@
+07-06-2023 06:32:02 - INFO - render Exhibition exhibits
+07-06-2023 06:32:15 - INFO - render exibits of hall 
+07-06-2023 06:32:34 - INFO - render exibits of hall 
+07-06-2023 06:34:25 - INFO - render user account
+07-06-2023 06:34:26 - INFO - render employee exhibits
+07-06-2023 06:35:16 - INFO - render Exhibition exhibits
+07-06-2023 06:35:40 - INFO - render exhibits of exposition
+07-06-2023 06:42:40 - ERROR - Failed to create exhibit - admission date are incorrect
+07-06-2023 06:43:00 - ERROR - Failed to create exhibit - admission date are incorrect
+07-06-2023 06:43:17 - ERROR - Failed to create exhibit - exhibit hall and observer hall are different
+07-06-2023 06:43:43 - INFO - user input passed custom validation
+07-06-2023 06:43:51 - ERROR - Failed to create exhibit - admission date are greater then exhibition date

@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta, date
 from django.contrib import admin
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
+from django.http import Http404
 
 from museum.forms import ExhibitForm
 from .models import ArtForm, Employee, Excursion, Exhibit, Exhibition, Exposition, Hall, Position, Theme
@@ -21,9 +22,20 @@ import re
 def create_user(sender, instance, created, **kwargs):
     if created:
         # Создание пользователя с такими же данными как у работника
-        User.objects.create_user(instance.user_name, "", "111111111")
-        # добавить изменение пароля у employee, чтобы не хранить правильный пароль
-        # а может и в пень. все равно не показывается
+        try:
+            User.objects.create_user(instance.user_name, "", "111111111")
+        except:
+            raise Http404('User with such username alredy exsited')
+
+        
+@receiver(post_delete, sender=Employee)
+def delete_user(sender, instance, **kwargs):
+    # Создание пользователя с такими же данными как у работника
+    try:
+        u = User.objects.get(username = instance.user_name)
+        u.delete()
+    except:
+        raise Http404('Cant find user with such username')
 
 class SeasonListFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
@@ -180,4 +192,5 @@ class ExcursionAdmin(admin.ModelAdmin):
 @admin.register(Position)
 class PositionAdmin(admin.ModelAdmin):
     pass
+
 

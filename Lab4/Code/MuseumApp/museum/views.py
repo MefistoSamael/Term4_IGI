@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.http import Http404, HttpResponse
 from datetime import date, datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
+import requests
 from .models import Employee, Excursion, Exhibit, Exhibition, Exposition, Hall
 from django.contrib import admin
 import logging
@@ -13,19 +14,31 @@ from plotly.graph_objects import Bar, Layout, Figure
 logger = logging.getLogger(__name__)
 
 
-def index(request):
-    now = datetime.now()
+class HomeView(View):
+    @staticmethod
+    def get(request):
+        response = requests.get('https://dog.ceo/api/breeds/image/random')
+        image_url = response.json()['message']
 
-    return render(
-        request,
-        "museum/index.html",
-        {
-            'title' : " Django",
-            'message' : "Hello Django!",
-            'content' : " on " + now.strftime("%A, %d %B, %Y at %X")
+        url = 'https://official-joke-api.appspot.com/random_joke'
+        try:
+            res = requests.get(url).json()
+
+            joke_setup = res['setup']
+            joke_punch = res['punchline']
+        except:
+            joke_setup = 'There will be no joke('
+            joke_punch = ''
+
+        context = {
+            'image_url': image_url,
+            'setup':joke_setup,
+            'punch':joke_punch
         }
-    )
 
+        return render(request, 'museum/index.html', context)
+    
+    
 def about(request):
     return render(
         request,

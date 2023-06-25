@@ -13,13 +13,20 @@
         Date: {{ exhibit.admission_date }}
     </li>
     <li>
-        Art form: {{ exhibit.art_form }}
+        Art form: 
+        <ul>
+            {% for aform in exhibit.art_form.all %}
+            <li>
+                {{aform}}
+            </li>
+            {%endfor%}
+        </ul>
     </li>
     <li>
         Observer: {{ exhibit.observer }}
     </li>
     <li>
-        photo: <img src="{{ exhibit.photo}}" alt="Photo doesnt exist">
+        photo: <img src="{{ exhibit.photo}}" alt="Photo doesnt exist" style="max-width: 500px;">
     </li>
     {% if exhibit.exposition %}
     <li>

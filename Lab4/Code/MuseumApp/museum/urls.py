@@ -5,8 +5,7 @@ import museum.views
 
 urlpatterns = [
 
-    path('museum/', museum.views.index, name='index'),
-    path('home/', museum.views.index, name='home'),
+    path('home/', museum.views.HomeView.as_view(), name='home'),
     path('about/', museum.views.about, name='about'),
     path('hall/', museum.views.HallListView.as_view(), name='hall'),
     path('excursion/', museum.views.ExcursionListView.as_view(), name='excursion'),
