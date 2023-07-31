@@ -9,15 +9,6 @@ from museum.forms import ExhibitForm
 from .models import ArtForm, Employee, Excursion, Exhibit, Exhibition, Exposition, Hall, Position, Theme
 import re
 
-# admin.site.register(Theme)
-# admin.site.register(Exposition)
-# admin.site.register(Exhibition)
-
-# admin.site.register(Theme)
-# admin.site.regiadmin.site.register(ArtForm)
-# admin.site.register(Excursion)
-# admin.site.register(Position)
-
 @receiver(post_save, sender=Employee)
 def create_user(sender, instance, created, **kwargs):
     if created:
