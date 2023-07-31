@@ -1,0 +1,47 @@
+{% extends "museum/layout.html" %}
+
+{% block content %}
+<h1>Expositions</h1>
+{% if exposition_list %}
+<ul>
+
+    {% for exposition in exposition_list %}
+    <li>
+        Name: {{ exposition.name }} 
+    </li>
+    <li>
+        Theme: {{ exposition.theme }}
+    </li>
+
+    {%if exposition.hall.all%}
+    <li>
+        Halls: 
+        <ul>
+            {% for hall in exposition.hall.all %}
+            
+            <li>
+                {{hall}}
+            </li>
+
+            {% endfor %}
+        </ul>
+    </li>
+    {%else%}
+    <li>
+        There are no halls
+    </li>
+    {% endif %}
+    <li>
+        <a href="exhibits/{{ exposition.id }}">View exibits</a>
+    </li>
+
+
+    <hr/>
+
+    {% endfor %}
+
+</ul>
+{% else %}
+    <p>There are no exposition</p>
+{% endif %}
+{% endblock %}
